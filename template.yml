@@ -3,7 +3,7 @@ Transform: 'AWS::Serverless-2016-10-31'
 
 Resources:
 
-  MyApi:
+  WAAPI:
     Type: AWS::Serverless::Api
     Properties:
       StageName: dev
@@ -14,39 +14,39 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: handler.hello
-      Runtime: nodejs10.x
+      Runtime: nodejs12.x
       CodeUri: ./hello
       Events:
         HelloAPI:
           Type: Api
           Properties:
-            RestApiId: !Ref MyApi
+            RestApiId: !Ref WAAPI
             Path: /hello
             Method: GET
 
   ApiKey:
     Type: 'AWS::ApiGateway::ApiKey'
     Properties:
-      Description: CloudFormation API Key for testing
+      Description: API Key demo
       Enabled: 'true'
       StageKeys:
-        - RestApiId: !Ref MyApi
+        - RestApiId: !Ref WAAPI
           StageName: dev
 
   UsagePlan:
     Type: 'AWS::ApiGateway::UsagePlan'
     Properties:
       ApiStages:
-        - ApiId: !Ref MyApi
+        - ApiId: !Ref WAAPI
           Stage: dev
-      Description: Customer ABC's usage plan!!!
+      Description: WA API Gateway Usage Plan
       Quota:
-        Limit: 5000
-        Period: MONTH
+        Limit: 5
+        Period: DAY
       Throttle:
-        BurstLimit: 200
-        RateLimit: 100
-      UsagePlanName: Test-User-Plan1
+        BurstLimit: 2
+        RateLimit: 1
+      UsagePlanName: WA-User-Plan
 
   UsagePlanKey:
     Type: 'AWS::ApiGateway::UsagePlanKey'
@@ -62,7 +62,7 @@ Outputs:
 
   ApiId:
     Description: "API ID"
-    Value: !Ref MyApi
+    Value: !Ref WAAPI
 
   ApiUrl:
     Description: "API endpoint URL for Prod environment"
