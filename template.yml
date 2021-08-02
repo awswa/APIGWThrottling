@@ -10,18 +10,6 @@ Resources:
       Auth:
         ApiKeyRequired: true
 
-  APIAuthorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      IdentitySource: method.request.header.authorization
-      Name: CognitoAuthorizer
-      ProviderARNs:
-        - Fn::GetAtt:
-            - CognitoUserPool
-            - Arn
-      RestApiId: !Ref WAAPI
-      Type: COGNITO_USER_POOLS
-
   HelloFunction:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -35,7 +23,6 @@ Resources:
             RestApiId: !Ref WAAPI
             Path: /hello
             Method: GET
-
   ApiKey:
     Type: 'AWS::ApiGateway::ApiKey'
     DependsOn:
@@ -71,6 +58,36 @@ Resources:
       KeyId: !Ref ApiKey
       KeyType: API_KEY
       UsagePlanId: !Ref UsagePlan
+
+  # Call Lambda layer
+  Authentication:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: authorizer/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Layers:
+        - !Ref GetIDTokenLayers
+      Events:
+        auth:
+          Type: Api
+          Properties:
+            Path: /auth
+            Method: post
+      Environment:
+        Variables:
+          PoolID: !Ref CognitoUserPool
+          AppID: !Ref CognitoUserPoolClient
+
+  # Get ID Token based on payload
+  GetIDTokenLayers:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GetIDTokenLayers
+      Description: Get ID Token from Cognito
+      ContentUri: getidtoken/
+      CompatibleRuntimes:
+        - nodejs12.x
 
   # Create User Pool in Cognito
   CognitoUserPool:
@@ -131,6 +148,18 @@ Resources:
         - - walab-
           - !Select [2, !Split ['/', !Ref AWS::StackId]]
 
+  APIAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      IdentitySource: method.request.header.authorization
+      Name: CognitoAuthorizer
+      ProviderARNs:
+        - Fn::GetAtt:
+            - CognitoUserPool
+            - Arn
+      RestApiId: !Ref WAAPI
+      Type: COGNITO_USER_POOLS
+
 Outputs:
   Region:
     Description: "Region"
@@ -143,7 +172,12 @@ Outputs:
   ApiUrl:
     Description: "API endpoint URL for Prod environment"
     Value: !Sub 'https://${WAAPI}.execute-api.${AWS::Region}.amazonaws.com/dev/'
-
+  CognitoUserPoolID:
+    Value: !Ref CognitoUserPool
+    Description: User Pool ID
+  CognitoAppClientID:
+    Value: !Ref CognitoUserPoolClient
+    Description: App Client ID
   CognitoSignupURL:
     Description: Firstly, please do sign up for API Authorization
     Value: !Join
