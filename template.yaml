@@ -39,7 +39,7 @@ Resources:
       ApiStages:
         - ApiId: !Ref MyApi
           Stage: dev
-      Description: Customer ABC's usage plan
+      Description: Customer ABC's usage plan!!!
       Quota:
         Limit: 5000
         Period: MONTH
