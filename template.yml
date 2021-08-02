@@ -10,6 +10,18 @@ Resources:
       Auth:
         ApiKeyRequired: true
 
+  APIAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      IdentitySource: method.request.header.authorization
+      Name: CognitoAuthorizer
+      ProviderARNs:
+        - Fn::GetAtt:
+            - CognitoUserPool
+            - Arn
+      RestApiId: !Ref WAAPI
+      Type: COGNITO_USER_POOLS
+
   HelloFunction:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -81,6 +93,7 @@ Resources:
     Properties:
       # Generate an app client name based on the stage
       ClientName: !Sub ${AWS::StackName}-user-pool-client
+      RefreshTokenValidity: 30
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
       AllowedOAuthFlows:
@@ -104,8 +117,8 @@ Resources:
       SupportedIdentityProviders:
         - COGNITO
       PreventUserExistenceErrors: ENABLED
-      AccessTokenValidity: 5
-      IdTokenValidity: 5
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
       TokenValidityUnits:
         AccessToken: "days"
         IdToken: "days"
