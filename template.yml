@@ -172,6 +172,9 @@ Outputs:
   ApiUrl:
     Description: "API endpoint URL for Prod environment"
     Value: !Sub 'https://${WAAPI}.execute-api.${AWS::Region}.amazonaws.com/dev/'
+  GetTokenAPI:
+    Description: "Get Token"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth"
   CognitoUserPoolID:
     Value: !Ref CognitoUserPool
     Description: User Pool ID
