@@ -60,6 +60,64 @@ Resources:
       KeyType: API_KEY
       UsagePlanId: !Ref UsagePlan
 
+  # Create User Pool in Cognito
+  CognitoUserPool:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      UserPoolName: !Sub ${AWS::StackName}-user-pool
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_LINK
+  # Create User Pool Client in Cognito
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      # Generate an app client name based on the stage
+      ClientName: !Sub ${AWS::StackName}-user-pool-client
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      AllowedOAuthFlows:
+          - code
+          - implicit
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - aws.cognito.signin.user.admin
+      CallbackURLs:
+        - 'https://example.com/callback'
+      DefaultRedirectURI: 'https://example.com/callback'
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      LogoutURLs:
+        - 'https://example.com/signout'
+      SupportedIdentityProviders:
+        - COGNITO
+      PreventUserExistenceErrors: ENABLED
+      AccessTokenValidity: 5
+      IdTokenValidity: 5
+      TokenValidityUnits:
+        AccessToken: "days"
+        IdToken: "days"
+  WACognitoUserPoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      Domain: !Join
+        - ''
+        - - walab-
+          - !Select [2, !Split ['/', !Ref AWS::StackId]]
+
 Outputs:
   Region:
     Description: "Region"
@@ -72,3 +130,14 @@ Outputs:
   ApiUrl:
     Description: "API endpoint URL for Prod environment"
     Value: !Sub 'https://${WAAPI}.execute-api.${AWS::Region}.amazonaws.com/dev/'
+
+  CognitoSignupURL:
+    Description: Firstly, please do sign up for API Authorization
+    Value: !Join
+      - ''
+      - - https://
+        - walab-
+        - !Select [2, !Split ['/', !Ref AWS::StackId]]
+        - !Sub '.auth.${AWS::Region}.amazoncognito.com/login?client_id='
+        - !Ref CognitoUserPoolClient
+        - '&response_type=code&scope=aws.cognito.signin.user.admin+email+openid&redirect_uri=https://example.com/callback'

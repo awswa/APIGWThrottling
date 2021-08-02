@@ -5,7 +5,7 @@
     "main": "index.js",
     "config": {
         "stackName": "WA-API-Throttling-demo",
-        "bucketName": "sampleapigwapp" //Replace bucketName with your own bucket name
+        "bucketName": "sampleapigwapp"
     },
     "scripts": {
         "deploy": "sam build --region us-east-1 && sam package --template-file template.yml --s3-bucket $npm_package_config_bucketName --output-template-file packaged.yaml && sam deploy --region ap-southeast-1 --template-file packaged.yaml --stack-name $npm_package_config_stackName --capabilities CAPABILITY_IAM && aws cloudformation describe-stacks --stack-name $npm_package_config_stackName --region ap-southeast-1 --query 'Stacks[].Outputs'",
