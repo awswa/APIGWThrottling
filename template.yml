@@ -26,7 +26,10 @@ Resources:
 
   ApiKey:
     Type: 'AWS::ApiGateway::ApiKey'
+    DependsOn:
+      - "UsagePlan"
     Properties:
+      Name: WA-API-KEY
       Description: API Key demo
       Enabled: 'true'
       StageKeys:
@@ -35,6 +38,8 @@ Resources:
 
   UsagePlan:
     Type: 'AWS::ApiGateway::UsagePlan'
+    DependsOn:
+      - WAAPIdevStage
     Properties:
       ApiStages:
         - ApiId: !Ref WAAPI
@@ -66,4 +71,4 @@ Outputs:
 
   ApiUrl:
     Description: "API endpoint URL for Prod environment"
-    Value: !Sub 'https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/dev/'
+    Value: !Sub 'https://${WAAPI}.execute-api.${AWS::Region}.amazonaws.com/dev/'

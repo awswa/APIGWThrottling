@@ -4,11 +4,11 @@
     "description": "",
     "main": "index.js",
     "config": {
-        "stackName": "learning-serverless-sam-api-gateway-user-plans",
-        "bucketName": "learning-serverless-publish-sam-app"
+        "stackName": "WA-API-Throttling-demo",
+        "bucketName": "sampleapigwapp" //Replace bucketName with your own bucket name
     },
     "scripts": {
-        "deploy": "sam build --region us-east-1 && sam package --template-file template.yml --s3-bucket sampleapigwapp --output-template-file packaged.yaml && sam deploy --region ap-southeast-1 --template-file packaged.yaml --stack-name $npm_package_config_stackName --capabilities CAPABILITY_IAM && aws cloudformation describe-stacks --stack-name $npm_package_config_stackName --region ap-southeast-1 --query 'Stacks[].Outputs'",
+        "deploy": "sam build --region us-east-1 && sam package --template-file template.yml --s3-bucket $npm_package_config_bucketName --output-template-file packaged.yaml && sam deploy --region ap-southeast-1 --template-file packaged.yaml --stack-name $npm_package_config_stackName --capabilities CAPABILITY_IAM && aws cloudformation describe-stacks --stack-name $npm_package_config_stackName --region ap-southeast-1 --query 'Stacks[].Outputs'",
         "describe": "aws cloudformation describe-stacks --region ap-southeast-1 --stack-name $npm_package_config_stackName --query 'Stacks[].Outputs'"
     },
     "keywords": [],
